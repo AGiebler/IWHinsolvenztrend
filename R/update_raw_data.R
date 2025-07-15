@@ -5,9 +5,9 @@
 get_session_id <- function(res) {
     # More robustly find the ViewState value by targeting its specific input field name
     session_id <- tryCatch({
-        res %>%
-            rvest::read_html() %>%
-            rvest::html_node("input[name='jakarta.faces.ViewState']") %>%
+        res |>
+            rvest::read_html() |>
+            rvest::html_node("input[name='jakarta.faces.ViewState']") |>
             rvest::html_attr("value")
     }, error = function(e) {
         warning(paste("Could not extract session ID:", e$message))
@@ -189,13 +189,13 @@ fetch_row_text <- function(row_index, initial_post_response, session_id_results,
 
     # 4. Parse the XML response and extract the text value from the hidden input
     tryCatch({
-        ajax_response %>%
-            httr::content("text", encoding = "UTF-8") %>%
-            xml2::read_xml() %>%
-            xml2::xml_find_first("//update[@id='frm_text:ihd_text']") %>%
-            xml2::xml_text() %>%
-            rvest::read_html() %>%
-            rvest::html_node("input") %>%
+        ajax_response |>
+            httr::content("text", encoding = "UTF-8") |>
+            xml2::read_xml() |>
+            xml2::xml_find_first("//update[@id='frm_text:ihd_text']") |>
+            xml2::xml_text() |>
+            rvest::read_html() |>
+            rvest::html_node("input") |>
             rvest::html_attr("value")
     }, error = function(e) {
         warning(paste("Failed to fetch or parse text for row index:", row_index, "Error:", e$message))
@@ -235,7 +235,7 @@ scrape_inso_table <- function(url, date, item, search_param, url_result) {
     }
     
     results_table <- tryCatch({
-        page_content %>% rvest::read_html() %>% rvest::html_node(xpath = "//*[@id='tbl_ergebnis']") %>% rvest::html_table(fill = TRUE)
+        page_content |> rvest::read_html() |> rvest::html_node(xpath = "//*[@id='tbl_ergebnis']") |> rvest::html_table(fill = TRUE)
     }, error = function(e) {
         warning(paste("Failed to parse results table for date", date, "item", item, ":", e$message))
         return(data.frame()) # Return empty dataframe on parsing error
@@ -269,7 +269,7 @@ scrape_inso_table <- function(url, date, item, search_param, url_result) {
 #' @return A cleaned and standardized data frame.
 clean_results <- function(df) {
     # Use dplyr::mutate with across for more efficient and readable cleaning.
-    df <- df %>%
+    df <- df |>
         dplyr::mutate(
             # Squish whitespace and convert to uppercase for specified columns
             dplyr::across(c(inso_kennzeichen, name, sitz), ~stringr::str_to_upper(stringr::str_squish(.))),
@@ -368,7 +368,7 @@ update_raw_data <- function(data_path = "data-raw") {
 
     # Combine with existing data, clean, and remove duplicates
     month_list <- get_month_list(dates_to_crawl)
-    df_inso_crawl <- df_inso_crawl %>% dplyr::filter(month %in% month_list) %>% dplyr::bind_rows(new_data) %>% clean_results()
+    df_inso_crawl <- df_inso_crawl |> dplyr::filter(month %in% month_list) |> dplyr::bind_rows(new_data) |> clean_results()
 
     check_for_empty_text(df_inso_crawl)
     arrow::write_dataset(df_inso_crawl, data_path, partitioning = "month", format = "parquet")
