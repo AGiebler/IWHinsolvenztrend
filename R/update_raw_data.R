@@ -13,7 +13,7 @@ get_session_id <- function(res) {
         warning(paste("Could not extract session ID:", e$message))
         return(NULL) # Return NULL on error
     })
-    
+
     return(session_id)
 }
 
@@ -164,12 +164,13 @@ build_ajax_params_for_text <- function(session_id_results, idx, form_detail_j_id
 #' @param row_index The 0-based index of the row in the results table.
 #' @param initial_post_response The HTTP response object from the initial search POST request.
 #' @param session_id_results The session ID obtained from the results page.
+#' @param result_url URL of the inso search result
 #' @return The text content of the insolvency entry, or NA if not found.
 fetch_row_text <- function(row_index, initial_post_response, session_id_results, result_url) {
     # 1. Extract the specific j_idt for this row from the initial page content
     str_tbl_ergebnis <- paste0("tbl_ergebnis:", row_index, ":frm_detail")
     page_content <- httr::content(initial_post_response, as = "text", encoding = "UTF-8")
-    
+
     form_detail_j_idt <- stringr::str_extract(page_content, pattern = paste0(str_tbl_ergebnis, ":j_idt[0-9]{3,4}"))
 
     if (is.na(form_detail_j_idt)) {
@@ -182,7 +183,7 @@ fetch_row_text <- function(row_index, initial_post_response, session_id_results,
 
     # 3. Make the AJAX request
     Sys.sleep(1) # Be polite to the server and avoid rate limiting
-    
+
     # Add error handling for the POST request itself
     ajax_response <- tryCatch({
     ajax_response <- httr::POST(url = result_url, body = ajax_params, encode = "form")
@@ -233,7 +234,7 @@ scrape_inso_table <- function(url, date, item, search_param, url_result) {
     if (stringr::str_detect(page_content, "Keine Treffer")) {
         return(data.frame())
     }
-    
+
     results_table <- tryCatch({
         page_content |> rvest::read_html() |> rvest::html_node(xpath = "//*[@id='tbl_ergebnis']") |> rvest::html_table(fill = TRUE)
     }, error = function(e) {
@@ -241,7 +242,7 @@ scrape_inso_table <- function(url, date, item, search_param, url_result) {
         return(data.frame()) # Return empty dataframe on parsing error
     })
     if (is.null(results_table) || nrow(results_table) == 0) return(data.frame())
-    
+
     colnames(results_table) <- c("datum", "inso_kennzeichen", "gericht", "name", "sitz", "register", "text")
     results_table$gegenstand <- as.integer(item)
 
@@ -297,7 +298,7 @@ check_for_empty_text <- function(df) {
     empty_text <- df |>
         dplyr::filter(text == "") |>
         nrow()
-    
+
     if (empty_text > 0) {
         print(paste0(empty_text, " bankruptcies with empty text."))
         stop("Please check the website for changes.")
@@ -319,7 +320,7 @@ check_for_empty_text <- function(df) {
 #' @importFrom xml2 read_xml xml_find_first xml_text
 #' @importFrom stats setNames
 update_raw_data <- function(data_path = "data-raw") {
-    # gegenstand: 0 - Sicherungsmassnahmen, 1 - Abweisungen, 2 - Eröffnungen
+    # gegenstand: 0 - Sicherungsmassnahmen, 1 - Abweisungen, 2 - Eroeffnungen
     item <- c("0", "1", "2")
     url <- "https://neu.insolvenzbekanntmachungen.de/ap/suche.jsf"
     url_result <- "https://neu.insolvenzbekanntmachungen.de/ap/ergebnis.jsf"
@@ -340,7 +341,7 @@ update_raw_data <- function(data_path = "data-raw") {
     results_list <- lapply(1:nrow(crawl_plan), function(i) {
         current_date <- crawl_plan$date[i]
         current_item <- crawl_plan$item[i]
-        
+
         # Wrap each iteration in a tryCatch to allow the loop to continue even if one fails
         tryCatch({
             crawl_date_parts <- split_date(current_date)
