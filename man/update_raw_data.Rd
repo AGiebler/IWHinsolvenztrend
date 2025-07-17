@@ -4,7 +4,7 @@
 \alias{update_raw_data}
 \title{Update Raw Insolvency Data}
 \usage{
-update_raw_data(data_path = "data-raw")
+update_raw_data(data_path = "data-raw/inso")
 }
 \arguments{
 \item{data_path}{The file path to the Parquet dataset directory.}

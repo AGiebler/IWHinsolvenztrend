@@ -17,6 +17,8 @@ fetch_row_text(
 \item{initial_post_response}{The HTTP response object from the initial search POST request.}
 
 \item{session_id_results}{The session ID obtained from the results page.}
+
+\item{result_url}{URL of the inso search result}
 }
 \value{
 The text content of the insolvency entry, or NA if not found.

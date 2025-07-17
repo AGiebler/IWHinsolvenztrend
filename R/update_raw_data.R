@@ -319,7 +319,7 @@ check_for_empty_text <- function(df) {
 #' @importFrom arrow open_dataset write_dataset
 #' @importFrom xml2 read_xml xml_find_first xml_text
 #' @importFrom stats setNames
-update_raw_data <- function(data_path = "data-raw") {
+update_raw_data <- function(data_path = "data-raw/inso") {
     # gegenstand: 0 - Sicherungsmassnahmen, 1 - Abweisungen, 2 - Eroeffnungen
     item <- c("0", "1", "2")
     url <- "https://neu.insolvenzbekanntmachungen.de/ap/suche.jsf"
