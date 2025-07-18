@@ -17,3 +17,51 @@ load_raw_data <- function(data_path = "data-raw/inso") {
     return(df)
 }
 
+
+identify_glaeubigerausschuss <- function(text) {
+    # Check if the text contains information about the Gläubigerausschuss
+    pattern <- "vorläufige[n|r]* Gläubigerausschu.+eingesetzt"
+
+    return(grepl(pattern, text, ignore.case = TRUE))
+}
+
+
+identify_vorl_insolvenzverwalter <- function(text) {
+    # Check if the text contains information about the preliminary insolvency administrator
+    pattern <- "vorläufig.+Insolvenzverwalter.+bestell"
+
+    return(grepl(pattern, text, ignore.case = TRUE))
+}
+
+
+identify_sachwalter <- function(text) {
+    # Check if the text contains information about the Sachwalter
+    pattern <- "zu.+Sachwalter.+bestell"
+
+    return(grepl(pattern, text, ignore.case = TRUE))
+}
+
+
+identify_eroeffnung <- function(text) {
+    # Check if the text contains information about the opening of the insolvency proceedings
+    pattern <- "Insolvenzverfahren.+eröffnet"
+
+    return(grepl(pattern, text, ignore.case = TRUE))
+}
+
+
+identify_abweisung <- function(text) {
+    # Check if the text contains information about the dismissal of the insolvency proceedings
+    # there are diferent pattarns for dismissal
+    # e.g. "Insolvenzverfahren.+abgewiesen" or "Insolvenzverfahren.+nicht eröffnet"
+    # or "Insolvenzverfahren.+nicht eröffnet"
+
+    pattern <- paste(
+        "mangels.+masse.+((ab|zurück)gewiesen|ab.+lehn|eingestellt)",
+        "antrag.+abgewiesen.+keine.+masse",
+        "antrag.+mangels.+masse",
+        sep = "|"
+    ) 
+
+    return(grepl(pattern, text, ignore.case = TRUE))
+}
